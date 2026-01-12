@@ -26,8 +26,8 @@ const FormSchema = z.object({
   detailLevel: z.string().min(1),
   backgroundLevel: z.string().min(1),
 
-  rush: z.boolean().default(false),
-
+  // Make these REQUIRED in the output shape
+  rush: z.coerce.boolean().default(false),
   subject: z.string().default(""),
   notes: z.string().default(""),
 
@@ -35,7 +35,8 @@ const FormSchema = z.object({
   clientEmail: z.string().email("Valid email required"),
 });
 
-type FormValues = z.infer<typeof FormSchema>;
+
+type FormValues = z.output<typeof FormSchema>;
 
 export default function CommissionWizard({
   artists,
