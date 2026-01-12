@@ -8,6 +8,13 @@
       "when": 1767643344548,
       "tag": "0000_overrated_power_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1767798519691,
+      "tag": "0001_thick_zemo",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { calculateEstimate } from "@/lib/pricing/calc";
-import { formatRangeUsd, formatUsd } from "@/lib/pricing/display";
+import { formatRangeUsd } from "@/lib/pricing/display";
 
 type ArtistRow = {
   id: string;
@@ -26,17 +26,14 @@ const FormSchema = z.object({
   detailLevel: z.string().min(1),
   backgroundLevel: z.string().min(1),
 
-  // REQUIRED boolean with default
   rush: z.boolean().default(false),
 
-  // REQUIRED strings with defaults
   subject: z.string().default(""),
   notes: z.string().default(""),
 
   clientName: z.string().min(1, "Name is required"),
   clientEmail: z.string().email("Valid email required"),
 });
-
 
 type FormValues = z.infer<typeof FormSchema>;
 
@@ -59,7 +56,7 @@ export default function CommissionWizard({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-    const form = useForm<FormValues>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
         requestedArtistId: prefill?.suggestedArtistId ?? "",
@@ -73,6 +70,7 @@ export default function CommissionWizard({
         clientName: "",
         clientEmail: "",
     },
+
     mode: "onBlur",
     });
 
@@ -227,7 +225,7 @@ export default function CommissionWizard({
               </div>
 
               <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" {...form.register("rush")} />
+                <input type="checkbox" {...form.register("rush", { valueAsBoolean: true })} />
                 Time-sensitive (rush may apply or may be declined)
               </label>
             </section>
