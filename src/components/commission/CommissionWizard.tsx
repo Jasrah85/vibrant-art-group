@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import {
+  Controller,
+  SubmitHandler,
+  useForm,
+} from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -18,6 +22,8 @@ type ArtistRow = {
   bioShort: string;
 };
 
+// ---- Schema ----
+// Use preprocess so we never get "unknown" from checkbox values across RHF versions.
 const FormSchema = z.object({
   requestedArtistId: z.string().optional(),
 
@@ -26,17 +32,21 @@ const FormSchema = z.object({
   detailLevel: z.string().min(1),
   backgroundLevel: z.string().min(1),
 
-  // Make these REQUIRED in the output shape
-  rush: z.coerce.boolean().default(false),
-  subject: z.string().default(""),
-  notes: z.string().default(""),
+  // checkbox: could be boolean, "on", undefined, etc.
+  rush: z.preprocess(
+    (v) => v === true || v === "true" || v === "on",
+    z.boolean()
+  ),
+
+  // Always present strings
+  subject: z.string(),
+  notes: z.string(),
 
   clientName: z.string().min(1, "Name is required"),
   clientEmail: z.string().email("Valid email required"),
 });
 
-
-type FormValues = z.output<typeof FormSchema>;
+type FormValues = z.infer<typeof FormSchema>;
 
 export default function CommissionWizard({
   artists,
@@ -58,22 +68,25 @@ export default function CommissionWizard({
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(FormSchema),
+    // Explicitly type the resolver to the same FormValues to avoid generic drift.
+    resolver: zodResolver(FormSchema) as any,
     defaultValues: {
-        requestedArtistId: prefill?.suggestedArtistId ?? "",
-        medium: prefill?.medium ?? "colored_pencil",
-        sizeTier: prefill?.sizeTier ?? "S",
-        detailLevel: prefill?.detailLevel ?? "DETAILED",
-        backgroundLevel: prefill?.backgroundLevel ?? "NONE",
-        rush: false,
-        subject: "",
-        notes: prefill?.notes ?? "",
-        clientName: "",
-        clientEmail: "",
-    },
+      requestedArtistId: prefill?.suggestedArtistId ?? "",
 
+      medium: prefill?.medium ?? "colored_pencil",
+      sizeTier: prefill?.sizeTier ?? "S",
+      detailLevel: prefill?.detailLevel ?? "DETAILED",
+      backgroundLevel: prefill?.backgroundLevel ?? "NONE",
+
+      rush: false,
+      subject: "",
+      notes: prefill?.notes ?? "",
+
+      clientName: "",
+      clientEmail: "",
+    },
     mode: "onBlur",
-    });
+  });
 
   const values = form.watch();
 
@@ -84,19 +97,25 @@ export default function CommissionWizard({
         sizeTier: values.sizeTier as any,
         detailLevel: values.detailLevel as any,
         backgroundLevel: values.backgroundLevel as any,
-        rush: values.rush,
+        rush: Boolean(values.rush),
       });
     } catch {
       return null;
     }
-  }, [values.medium, values.sizeTier, values.detailLevel, values.backgroundLevel, values.rush]);
+  }, [
+    values.medium,
+    values.sizeTier,
+    values.detailLevel,
+    values.backgroundLevel,
+    values.rush,
+  ]);
 
   const selectedArtist = useMemo(() => {
     if (!values.requestedArtistId) return null;
     return artists.find((a) => a.id === values.requestedArtistId) ?? null;
   }, [artists, values.requestedArtistId]);
 
-  async function onSubmit(v: FormValues) {
+  const onSubmit: SubmitHandler<FormValues> = async (v) => {
     setSubmitting(true);
     setSubmitError(null);
 
@@ -112,7 +131,9 @@ export default function CommissionWizard({
         }),
       });
 
-      const json = await res.json();
+      const text = await res.text();
+      const json = text ? JSON.parse(text) : null;
+
       if (!res.ok) {
         setSubmitError(json?.error ?? "Submission failed");
         setSubmitting(false);
@@ -125,14 +146,22 @@ export default function CommissionWizard({
     } finally {
       setSubmitting(false);
     }
-  }
+  };
 
   const StepNav = (
     <div className="flex items-center gap-2 text-sm">
-      <div className={`rounded-full px-3 py-1 ${step === 1 ? "bg-black text-white" : "border"}`}>1. Options</div>
-      <div className={`rounded-full px-3 py-1 ${step === 2 ? "bg-black text-white" : "border"}`}>2. Details</div>
-      <div className={`rounded-full px-3 py-1 ${step === 3 ? "bg-black text-white" : "border"}`}>3. Contact</div>
-      <div className={`rounded-full px-3 py-1 ${step === 4 ? "bg-black text-white" : "border"}`}>4. Review</div>
+      <div className={`rounded-full px-3 py-1 ${step === 1 ? "bg-black text-white" : "border"}`}>
+        1. Options
+      </div>
+      <div className={`rounded-full px-3 py-1 ${step === 2 ? "bg-black text-white" : "border"}`}>
+        2. Details
+      </div>
+      <div className={`rounded-full px-3 py-1 ${step === 3 ? "bg-black text-white" : "border"}`}>
+        3. Contact
+      </div>
+      <div className={`rounded-full px-3 py-1 ${step === 4 ? "bg-black text-white" : "border"}`}>
+        4. Review
+      </div>
     </div>
   );
 
@@ -146,10 +175,7 @@ export default function CommissionWizard({
             <section className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Preferred artist (optional)</label>
-                <select
-                  className="mt-1 w-full rounded-lg border p-2"
-                  {...form.register("requestedArtistId")}
-                >
+                <select className="mt-1 w-full rounded-lg border p-2" {...form.register("requestedArtistId")}>
                   <option value="">Match me to the best fit</option>
                   {artists.map((a) => (
                     <option key={a.id} value={a.id}>
@@ -225,10 +251,21 @@ export default function CommissionWizard({
                 </div>
               </div>
 
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" {...form.register("rush", { valueAsBoolean: true })} />
-                Time-sensitive (rush may apply or may be declined)
-              </label>
+              {/* Checkbox: use Controller for widest compatibility */}
+              <Controller
+                control={form.control}
+                name="rush"
+                render={({ field }) => (
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(field.value)}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                    />
+                    Time-sensitive (rush may apply or may be declined)
+                  </label>
+                )}
+              />
             </section>
           )}
 
@@ -236,7 +273,11 @@ export default function CommissionWizard({
             <section className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Subject / what you want</label>
-                <input className="mt-1 w-full rounded-lg border p-2" {...form.register("subject")} placeholder="Example: portrait of my dog, fantasy landscape, memorial piece..." />
+                <input
+                  className="mt-1 w-full rounded-lg border p-2"
+                  {...form.register("subject")}
+                  placeholder="Example: portrait of my dog, fantasy landscape, memorial piece..."
+                />
               </div>
 
               <div>
@@ -261,20 +302,26 @@ export default function CommissionWizard({
                   <label className="text-sm font-medium">Your name</label>
                   <input className="mt-1 w-full rounded-lg border p-2" {...form.register("clientName")} />
                   {form.formState.errors.clientName ? (
-                    <div className="mt-1 text-xs text-red-600">{form.formState.errors.clientName.message}</div>
+                    <div className="mt-1 text-xs text-red-600">
+                      {String(form.formState.errors.clientName.message)}
+                    </div>
                   ) : null}
                 </div>
+
                 <div>
                   <label className="text-sm font-medium">Email</label>
                   <input className="mt-1 w-full rounded-lg border p-2" {...form.register("clientEmail")} />
                   {form.formState.errors.clientEmail ? (
-                    <div className="mt-1 text-xs text-red-600">{form.formState.errors.clientEmail.message}</div>
+                    <div className="mt-1 text-xs text-red-600">
+                      {String(form.formState.errors.clientEmail.message)}
+                    </div>
                   ) : null}
                 </div>
               </div>
 
               <div className="text-xs text-muted-foreground">
-                Submitting this request does not commit you to a purchase. The artist will confirm details and a final quote before any payment is requested.
+                Submitting this request does not commit you to a purchase. The artist will confirm details and a final quote
+                before any payment is requested.
               </div>
             </section>
           )}
@@ -284,12 +331,25 @@ export default function CommissionWizard({
               <div className="rounded-xl border p-4 text-sm">
                 <div className="font-medium">Review</div>
                 <div className="mt-2 grid gap-1 text-muted-foreground">
-                  <div><span className="text-foreground">Medium:</span> {values.medium}</div>
-                  <div><span className="text-foreground">Size:</span> {values.sizeTier}</div>
-                  <div><span className="text-foreground">Detail:</span> {values.detailLevel}</div>
-                  <div><span className="text-foreground">Background:</span> {values.backgroundLevel}</div>
-                  <div><span className="text-foreground">Rush:</span> {values.rush ? "Yes" : "No"}</div>
-                  <div><span className="text-foreground">Artist:</span> {selectedArtist ? selectedArtist.displayName : "Match me to best fit"}</div>
+                  <div>
+                    <span className="text-foreground">Medium:</span> {values.medium}
+                  </div>
+                  <div>
+                    <span className="text-foreground">Size:</span> {values.sizeTier}
+                  </div>
+                  <div>
+                    <span className="text-foreground">Detail:</span> {values.detailLevel}
+                  </div>
+                  <div>
+                    <span className="text-foreground">Background:</span> {values.backgroundLevel}
+                  </div>
+                  <div>
+                    <span className="text-foreground">Rush:</span> {values.rush ? "Yes" : "No"}
+                  </div>
+                  <div>
+                    <span className="text-foreground">Artist:</span>{" "}
+                    {selectedArtist ? selectedArtist.displayName : "Match me to best fit"}
+                  </div>
                 </div>
               </div>
 
@@ -345,9 +405,7 @@ export default function CommissionWizard({
           </div>
         ) : (
           <div className="mt-3 space-y-2">
-            <div className="text-2xl font-semibold">
-              {formatRangeUsd(estimate.low, estimate.high)}
-            </div>
+            <div className="text-2xl font-semibold">{formatRangeUsd(estimate.low, estimate.high)}</div>
             <div className="text-sm text-muted-foreground">
               Estimated deposit after approval:{" "}
               <span className="text-foreground">
