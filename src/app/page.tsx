@@ -10,7 +10,7 @@ type CardProps = {
 
 function Card({ title, description, href, badge, disabled }: CardProps) {
   const base =
-    "group block rounded-2xl border p-5 transition hover:bg-muted/40";
+    "card card-hover group block p-5";
   const disabledCls = "opacity-60 cursor-not-allowed hover:bg-transparent";
   const body = (
     <>
@@ -50,7 +50,7 @@ export default function HomePage() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       {/* Hero */}
-      <section className="rounded-3xl border p-8 md:p-10">
+      <section className="card p-8 md:p-10">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
             Vibrant Art Group • Family-made artwork & commissions
@@ -69,19 +69,19 @@ export default function HomePage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/commission"
-              className="rounded-lg bg-black px-4 py-2 text-white"
+              className="btn btn-primary"
             >
               Request a commission
             </Link>
             <Link
               href="/gallery"
-              className="rounded-lg border px-4 py-2"
+              className="btn btn-secondary"
             >
               Browse the gallery
             </Link>
             <Link
               href="/artists"
-              className="rounded-lg border px-4 py-2"
+              className="btn btn-tertiary"
             >
               Meet the artists
             </Link>
@@ -145,21 +145,21 @@ export default function HomePage() {
 
       {/* What to expect */}
       <section className="mt-10 grid gap-4 lg:grid-cols-3">
-        <div className="rounded-2xl border p-6">
+        <div className="card p-6">
           <h3 className="text-lg font-semibold">How commissions work</h3>
           <p className="mt-2 text-sm text-muted-foreground">
             Submit your request, the artist reviews details, and a final quote is
             confirmed before any payment is requested.
           </p>
         </div>
-        <div className="rounded-2xl border p-6">
+        <div className="card p-6">
           <h3 className="text-lg font-semibold">Deposits</h3>
           <p className="mt-2 text-sm text-muted-foreground">
             Large or time-intensive pieces may require a deposit after approval.
             The estimated deposit range is shown up front.
           </p>
         </div>
-        <div className="rounded-2xl border p-6">
+        <div className="card p-6">
           <h3 className="text-lg font-semibold">Respectful timelines</h3>
           <p className="mt-2 text-sm text-muted-foreground">
             We prioritize quality. Rush is sometimes possible, but it’s never
@@ -167,24 +167,6 @@ export default function HomePage() {
           </p>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="mt-12 border-t pt-6 text-sm text-muted-foreground">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>© {new Date().getFullYear()} Vibrant Art Group</div>
-          <div className="flex gap-4">
-            <Link className="underline underline-offset-4" href="/gallery">
-              Gallery
-            </Link>
-            <Link className="underline underline-offset-4" href="/commission">
-              Commission
-            </Link>
-            <Link className="underline underline-offset-4" href="/artists">
-              Artists
-            </Link>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }

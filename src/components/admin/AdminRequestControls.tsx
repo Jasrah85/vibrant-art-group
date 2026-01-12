@@ -80,7 +80,7 @@ export default function AdminRequestControls(props: {
           type="button"
           onClick={save}
           disabled={saving}
-          className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-50"
+          className="btn btn-primary disabled:opacity-50"
         >
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save"}
         </button>

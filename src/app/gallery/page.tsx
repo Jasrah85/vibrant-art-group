@@ -18,7 +18,7 @@ export default async function GalleryPage() {
           <Link
             key={g.id}
             href={`/gallery/${g.slug}`}
-            className="rounded-xl border p-4 hover:bg-muted/40"
+            className="card card-hover p-8 md:p-10"
           >
             <div className="font-medium">{g.title}</div>
             <div className="mt-1 text-sm text-muted-foreground">

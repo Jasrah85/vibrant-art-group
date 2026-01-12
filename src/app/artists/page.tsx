@@ -18,7 +18,7 @@ export default async function ArtistsPage() {
           <Link
             key={a.id}
             href={`/artists/${a.slug}`}
-            className="rounded-xl border p-4 hover:bg-muted/40"
+            className="card card-hover p-8 md:p-10"
           >
             <div className="text-lg font-medium">{a.displayName}</div>
             <div className="mt-1 text-sm text-muted-foreground">

@@ -28,7 +28,7 @@ export default async function AdminRequestsPage() {
           <Link
             key={r.id}
             href={`/admin/requests/${r.id}`}
-            className="block rounded-xl border p-4 hover:bg-muted/40"
+            className="block card card-hover p-8 md:p-10"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="font-medium">{r.publicId}</div>

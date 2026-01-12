@@ -175,7 +175,7 @@ export default function CommissionWizard({
             <section className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Preferred artist (optional)</label>
-                <select className="mt-1 w-full rounded-lg border p-2" {...form.register("requestedArtistId")}>
+                <select className="mt-1 select" {...form.register("requestedArtistId")}>
                   <option value="">Match me to the best fit</option>
                   {artists.map((a) => (
                     <option key={a.id} value={a.id}>
@@ -195,7 +195,7 @@ export default function CommissionWizard({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="text-sm font-medium">Medium</label>
-                  <select className="mt-1 w-full rounded-lg border p-2" {...form.register("medium")}>
+                  <select className="mt-1 select" {...form.register("medium")}>
                     <option value="colored_pencil">Colored pencil</option>
                     <option value="graphite">Graphite</option>
                     <option value="charcoal">Charcoal</option>
@@ -218,7 +218,7 @@ export default function CommissionWizard({
 
                 <div>
                   <label className="text-sm font-medium">Size</label>
-                  <select className="mt-1 w-full rounded-lg border p-2" {...form.register("sizeTier")}>
+                  <select className="mt-1 select" {...form.register("sizeTier")}>
                     <option value="XS">XS (keepsake)</option>
                     <option value="S">S (8×10 / 8.5×11)</option>
                     <option value="M">M (11×14 / 12×16)</option>
@@ -230,7 +230,7 @@ export default function CommissionWizard({
 
                 <div>
                   <label className="text-sm font-medium">Detail level</label>
-                  <select className="mt-1 w-full rounded-lg border p-2" {...form.register("detailLevel")}>
+                  <select className="mt-1 select" {...form.register("detailLevel")}>
                     <option value="MINIMAL">Minimal</option>
                     <option value="MODERATE">Moderate</option>
                     <option value="DETAILED">Detailed</option>
@@ -241,7 +241,7 @@ export default function CommissionWizard({
 
                 <div>
                   <label className="text-sm font-medium">Background</label>
-                  <select className="mt-1 w-full rounded-lg border p-2" {...form.register("backgroundLevel")}>
+                  <select className="mt-1 select" {...form.register("backgroundLevel")}>
                     <option value="NONE">None / flat</option>
                     <option value="ABSTRACT">Abstract / textural</option>
                     <option value="SIMPLE">Simple context</option>
@@ -274,7 +274,7 @@ export default function CommissionWizard({
               <div>
                 <label className="text-sm font-medium">Subject / what you want</label>
                 <input
-                  className="mt-1 w-full rounded-lg border p-2"
+                  className="mt-1 input"
                   {...form.register("subject")}
                   placeholder="Example: portrait of my dog, fantasy landscape, memorial piece..."
                 />
@@ -283,7 +283,7 @@ export default function CommissionWizard({
               <div>
                 <label className="text-sm font-medium">Notes & specifics</label>
                 <textarea
-                  className="mt-1 w-full rounded-lg border p-2"
+                  className="mt-1 textarea"
                   rows={7}
                   {...form.register("notes")}
                   placeholder="Include any important details: style, colors, pose, text to include, story behind it, reference notes, etc."
@@ -300,7 +300,7 @@ export default function CommissionWizard({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="text-sm font-medium">Your name</label>
-                  <input className="mt-1 w-full rounded-lg border p-2" {...form.register("clientName")} />
+                  <input className="mt-1 input" {...form.register("clientName")} />
                   {form.formState.errors.clientName ? (
                     <div className="mt-1 text-xs text-red-600">
                       {String(form.formState.errors.clientName.message)}
@@ -310,7 +310,7 @@ export default function CommissionWizard({
 
                 <div>
                   <label className="text-sm font-medium">Email</label>
-                  <input className="mt-1 w-full rounded-lg border p-2" {...form.register("clientEmail")} />
+                  <input className="mt-1 input" {...form.register("clientEmail")} />
                   {form.formState.errors.clientEmail ? (
                     <div className="mt-1 text-xs text-red-600">
                       {String(form.formState.errors.clientEmail.message)}
@@ -364,7 +364,7 @@ export default function CommissionWizard({
           <div className="flex items-center justify-between">
             <button
               type="button"
-              className="rounded-lg border px-4 py-2 disabled:opacity-50"
+              className="btn btn-secondary disabled:opacity-50"
               onClick={() => setStep((s) => Math.max(1, s - 1))}
               disabled={step === 1 || submitting}
             >
@@ -374,7 +374,7 @@ export default function CommissionWizard({
             {step < 4 ? (
               <button
                 type="button"
-                className="rounded-lg bg-black px-4 py-2 text-white"
+                className="btn btn-primary"
                 onClick={() => setStep((s) => Math.min(4, s + 1))}
                 disabled={submitting}
               >
@@ -383,7 +383,7 @@ export default function CommissionWizard({
             ) : (
               <button
                 type="submit"
-                className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-50"
+                className="btn btn-primary disabled:opacity-50"
                 disabled={submitting}
               >
                 {submitting ? "Submitting..." : "Submit request"}

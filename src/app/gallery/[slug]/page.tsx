@@ -31,10 +31,10 @@ export default async function GalleryItemPage({
       </div>
 
       <div className="mt-6 flex gap-3">
-        <Link href={`/commission/from/${item.slug}`} className="rounded-lg bg-black px-4 py-2 text-white">
+        <Link href={`/commission/from/${item.slug}`} className="btn btn-primary">
           Request something similar
         </Link>
-        <Link href="/commission" className="rounded-lg border px-4 py-2">
+        <Link href="/commission" className="btn btn-secondary">
           Start a custom commission
         </Link>
       </div>

@@ -1,26 +1,312 @@
 @import "tailwindcss";
 
+/* -------------------------------------------------------
+   Theme tokens
+   ------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base */
+  --bg: #0b0d10;
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.78);
+  --muted-2: rgba(255, 255, 255, 0.62);
+
+  /* Surfaces */
+  --surface: rgba(255, 255, 255, 0.08);
+  --surface-2: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.14);
+
+  /* Your gradient */
+  --brand-gradient: linear-gradient(
+    to right top,
+    #d41717,
+    #de2e38,
+    #e54455,
+    #e85870,
+    #e96c88,
+    #e074a4,
+    #cf80bc,
+    #ba8ccd,
+    #8196da,
+    #389dd2,
+    #009eb7,
+    #129b92
+  );
+
+  /* Accessibility knob: raise to increase contrast behind white text */
+  --scrim-strength: 0.58;
+
+  /* Radius */
+  --radius-xl: 1.25rem;
+
+  /* Shadows */
+  --shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.28);
+  --shadow-softer: 0 10px 30px rgba(0, 0, 0, 0.22);
+  --focus-ring: 0 0 0 4px rgba(255, 255, 255, 0.22);
+
+  /* NAV tokens */
+  --nav-max: 72rem; /* ~max-w-6xl */
+  --nav-top: 0.9rem;
+  --nav-pad-y: 0.85rem;     /* normal */
+  --nav-pad-y-sm: 0.55rem;  /* scrolled */
+  --nav-pad-x: 1.05rem;
+  --nav-blur: 14px;
+  --nav-blur-scrolled: 18px;
+  --nav-bg: rgba(255, 255, 255, 0.10);
+  --nav-bg-scrolled: rgba(255, 255, 255, 0.14);
+  --nav-border: rgba(255, 255, 255, 0.18);
+  --nav-border-scrolled: rgba(255, 255, 255, 0.22);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --font-sans: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial);
+  --font-mono: var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* -------------------------------------------------------
+   Background: gradient + scrim + subtle motion
+   ------------------------------------------------------- */
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background-color: var(--bg);
+  background-image: var(--brand-gradient);
+  background-size: 180% 180%;
+  background-position: 0% 50%;
+  background-attachment: fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 20% 10%, rgba(0,0,0,0.25), transparent 60%),
+    radial-gradient(900px 500px at 80% 90%, rgba(0,0,0,0.22), transparent 62%),
+    rgba(0, 0, 0, var(--scrim-strength));
+  z-index: -1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body {
+    animation: gradient-drift 18s ease-in-out infinite;
+  }
+  @keyframes gradient-drift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 60%; }
+    100% { background-position: 0% 50%; }
+  }
+}
+
+/* -------------------------------------------------------
+   Reusable UI: cards, text, buttons
+   ------------------------------------------------------- */
+.text-muted { color: var(--muted); }
+.text-muted-2 { color: var(--muted-2); }
+
+.card {
+  border-radius: calc(var(--radius-xl) + 0.5rem);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.card-hover {
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+.card-hover:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+  border-color: rgba(255,255,255,0.22);
+}
+
+/* Oval buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.62rem 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease, opacity 160ms ease;
+  box-shadow: var(--shadow-softer);
+}
+.btn:active { transform: translateY(0.5px); }
+.btn:focus-visible { outline: none; box-shadow: var(--shadow-soft), var(--focus-ring); }
+
+.btn-primary {
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  background-image: var(--brand-gradient);
+  background-size: 180% 180%;
+  background-position: 50% 50%;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
+  background-position: 70% 40%;
+}
+
+.btn-secondary {
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
+  background: rgba(255,255,255,0.14);
+}
+
+.btn-tertiary {
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.26);
+  background: rgba(0,0,0,0.10);
+}
+.btn-tertiary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
+  background: rgba(0,0,0,0.16);
+}
+
+/* -------------------------------------------------------
+   NAV STYLES: floating glass + shrink on scroll
+   ------------------------------------------------------- */
+.nav-shell {
+  position: sticky;
+  top: var(--nav-top);
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding: 0 1.25rem;
+}
+
+.nav-glass {
+  width: min(var(--nav-max), calc(100% - 2.5rem));
+  border-radius: 999px;
+  border: 1px solid var(--nav-border);
+  background: var(--nav-bg);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(var(--nav-blur));
+  -webkit-backdrop-filter: blur(var(--nav-blur));
+  padding: var(--nav-pad-y) var(--nav-pad-x);
+    transition:
+    padding 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    backdrop-filter 180ms ease,
+    transform 220ms ease,
+    opacity 220ms ease;
+  will-change: transform, opacity;
+}
+
+/* Shrink state */
+.nav-glass.is-scrolled {
+  padding: var(--nav-pad-y-sm) var(--nav-pad-x);
+  background: var(--nav-bg-scrolled);
+  border-color: var(--nav-border-scrolled);
+  backdrop-filter: blur(var(--nav-blur-scrolled));
+  -webkit-backdrop-filter: blur(var(--nav-blur-scrolled));
+}
+
+/* Hide-on-scroll-down, show-on-scroll-up */
+.nav-glass.is-hidden {
+  transform: translateY(-10px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-glass {
+    transition: none;
+  }
+}
+/* -------------------------------------------------------
+   FOOTER: gradient horizon + readable surface
+   ------------------------------------------------------- */
+
+/* A calmer gradient than the body background */
+.footer-horizon {
+  position: relative;
+  margin-top: 4rem;
+  padding: 3rem 0 2.25rem;
+}
+
+/* Creates the subtle gradient band */
+.footer-horizon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* A toned-down gradient layer */
+  background:
+    linear-gradient(180deg,
+      rgba(0,0,0,0) 0%,
+      rgba(0,0,0,0.22) 40%,
+      rgba(0,0,0,0.45) 100%
+    ),
+    var(--brand-gradient);
+  opacity: 0.38; /* controls how “gradient” it feels */
+  filter: saturate(1.05);
+  pointer-events: none;
+  z-index: -2;
+}
+
+/* A darker wash to ensure consistent readability */
+.footer-horizon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.58);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Inner container (not oval) */
+.footer-inner {
+  width: min(var(--nav-max), calc(100% - 2.5rem));
+  margin: 0 auto;
+
+  border-radius: calc(var(--radius-xl) + 0.75rem);
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  padding: 1.75rem 1.5rem;
+}
+
+/* Footer links */
+.footer-link {
+  color: rgba(255,255,255,0.78);
+  transition: color 160ms ease, opacity 160ms ease;
+  text-underline-offset: 4px;
+}
+.footer-link:hover {
+  color: rgba(255,255,255,0.95);
+}
+
+/* Small badge/chip (optional) */
+.footer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08);
+  padding: 0.35rem 0.65rem;
+  color: rgba(255,255,255,0.84);
+  font-size: 0.85rem;
 }

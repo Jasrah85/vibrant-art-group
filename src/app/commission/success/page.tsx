@@ -21,10 +21,10 @@ export default async function CommissionSuccessPage({
       </div>
 
       <div className="mt-6 flex gap-3">
-        <Link href="/gallery" className="rounded-lg border px-4 py-2">
+        <Link href="/gallery" className="btn btn-secondary">
           Back to gallery
         </Link>
-        <Link href="/commission" className="rounded-lg bg-black px-4 py-2 text-white">
+        <Link href="/commission" className="btn btn-primary">
           Submit another request
         </Link>
       </div>
