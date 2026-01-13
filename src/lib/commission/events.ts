@@ -1,18 +1,17 @@
-// lib/commission/events.ts
+// src/lib/commission/events.ts
 import "server-only";
-
 import { db } from "@/lib/db";
 import { commissionEvents } from "@/lib/db/schema";
 
-type Actor = "system" | "admin" | "client";
+export type CommissionEventActor = "system" | "admin" | "client";
 
 export async function logCommissionEvent(args: {
   requestId: string;
   type: string;
-  actor: Actor;
+  actor: CommissionEventActor;
   summary: string;
   data?: unknown;
-  createdAtMs?: number; // optional ms epoch
+  createdAtMs?: number;
 }) {
   const id = crypto.randomUUID();
   const createdAt = args.createdAtMs ? new Date(args.createdAtMs) : new Date();
@@ -38,12 +37,9 @@ export function summarizeStatusChange(prev: string, next: string) {
   return `Status changed: ${prev} → ${next}`;
 }
 
-export function summarizeAssignmentChange(
-  prevArtistId: string | null,
-  nextArtistId: string | null
-) {
-  const prevLabel = prevArtistId ? "assigned" : "unassigned";
-  const nextLabel = nextArtistId ? "assigned" : "unassigned";
-  if (prevArtistId === nextArtistId) return null;
+export function summarizeAssignmentChange(prevId: string | null, nextId: string | null) {
+  if (prevId === nextId) return null;
+  const prevLabel = prevId ? "assigned" : "unassigned";
+  const nextLabel = nextId ? "assigned" : "unassigned";
   return `Assignment changed: ${prevLabel} → ${nextLabel}`;
 }

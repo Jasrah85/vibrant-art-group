@@ -119,9 +119,8 @@ export async function POST(req: Request) {
   // email notify (best-effort) + event logging
   try {
     const adminUrl = `${process.env.APP_URL}/admin/requests/${id}`;
-    const summary = `${data.medium}, ${data.sizeTier}, ${data.detailLevel}, bg:${data.backgroundLevel}${
-      data.rush ? ", rush" : ""
-    }`;
+    const summary = `${data.medium}, ${data.sizeTier}, ${data.detailLevel}, bg:${data.backgroundLevel}${data.rush ? ", rush" : ""
+      }`;
 
     const tpl = newCommissionEmail({
       publicId,
@@ -143,8 +142,14 @@ export async function POST(req: Request) {
       type: "email_sent",
       actor: "system",
       summary: "Admin notification email sent",
-      data: { provider: "resend", result },
+      data: {
+        template: "admin_new_request",
+        provider: "resend",
+        to: process.env.ADMIN_NOTIFY_EMAIL!,
+        result,
+      },
     });
+
   } catch (err: any) {
     await logCommissionEvent({
       requestId: id,
@@ -152,9 +157,13 @@ export async function POST(req: Request) {
       actor: "system",
       summary: "Admin notification email failed",
       data: {
+        template: "admin_new_request",
+        provider: "resend",
+        to: process.env.ADMIN_NOTIFY_EMAIL!,
         message: err?.message ?? String(err),
       },
     });
+
     // ignore email errors for now (your current behavior)
   }
 

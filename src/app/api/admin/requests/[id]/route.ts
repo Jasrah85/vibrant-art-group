@@ -22,7 +22,6 @@ export async function PATCH(
   ctx: { params: Promise<{ id: string }> } // <-- important
 ) {
   const { id: requestId } = await ctx.params; // <-- important
-  console.log("PATCH requestId:", requestId);
 
   if (!requestId) {
     return NextResponse.json({ error: "Missing request id" }, { status: 400 });
@@ -102,17 +101,23 @@ export async function PATCH(
     }
 
     if (isMeaningfulNotesUpdate(current.adminNotes ?? "", next.adminNotes ?? "")) {
-      await logCommissionEvent({
-        requestId,
-        type: "admin_notes_updated",
-        actor: "admin",
-        summary: "Internal notes updated",
-        data: {
-          previousLength: (current.adminNotes ?? "").length,
-          nextLength: (next.adminNotes ?? "").length,
-        },
-      });
-    }
+  const prev = (current.adminNotes ?? "").trim();
+  const nxt = (next.adminNotes ?? "").trim();
+
+  await logCommissionEvent({
+    requestId,
+    type: "admin_notes_updated",
+    actor: "admin",
+    summary: "Internal notes updated",
+    data: {
+      previousLength: prev.length,
+      nextLength: nxt.length,
+      previousPreview: prev.slice(0, 160),
+      nextPreview: nxt.slice(0, 160),
+    },
+  });
+}
+
   } catch {
     // swallow event errors
   }
