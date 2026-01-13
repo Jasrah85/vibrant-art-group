@@ -45,8 +45,8 @@ export default function RootLayout({
         <NavBar />
         {/* Gives pages consistent breathing room under the floating nav */}
         <div className="pt-20">{children}</div>
-      </body>
       <Footer />
+      </body>
     </html>
   );
 }

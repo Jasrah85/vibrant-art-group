@@ -3,6 +3,7 @@ import { commissionRequests } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { getArtists } from "@/lib/db/queries";
+import ActivityTimeline from "./ActivityTimeline";
 import AdminRequestControls from "@/components/admin/AdminRequestControls";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export default async function AdminRequestDetail({
       <div className="mt-2 text-sm text-muted-foreground">
         {req.clientName} • {req.clientEmail} • {req.status}
       </div>
-
+<ActivityTimeline requestId={id} />
       <div className="mt-6">
         <AdminRequestControls
           requestId={req.id}

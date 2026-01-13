@@ -91,3 +91,23 @@ export const commissionFiles = sqliteTable("commission_files", {
 
   createdAt: integer("created_at").notNull().default(sql`(unixepoch())`),
 });
+
+export const commissionEvents = sqliteTable("commission_events", {
+  id: text("id").primaryKey(),
+  requestId: text("request_id").notNull(),
+
+  // Examples: request_created, status_changed, assignment_changed, admin_notes_updated, email_sent
+  type: text("type").notNull(),
+
+  // "system" | "admin" | "client"
+  actor: text("actor").notNull(),
+
+  summary: text("summary").notNull(),
+
+  // optional JSON payload (diffs, ids, metadata)
+  dataJson: text("data_json"),
+
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});

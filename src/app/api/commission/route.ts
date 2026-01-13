@@ -1,3 +1,4 @@
+// app/api/commission/route.ts
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -5,6 +6,7 @@ import { commissionRequests } from "@/lib/db/schema";
 import { calculateEstimate } from "@/lib/pricing/calc";
 import { resend } from "@/lib/email/resend";
 import { newCommissionEmail } from "@/lib/email/templates";
+import { logCommissionEvent } from "@/lib/commission/events";
 
 const CommissionPayload = z.object({
   clientName: z.string().min(1),
@@ -25,14 +27,17 @@ const CommissionPayload = z.object({
   notes: z.string().optional().default(""),
 
   // uploads later
-  files: z.array(
-    z.object({
-      objectKey: z.string(),
-      originalName: z.string(),
-      contentType: z.string(),
-      sizeBytes: z.number(),
-    })
-  ).optional().default([]),
+  files: z
+    .array(
+      z.object({
+        objectKey: z.string(),
+        originalName: z.string(),
+        contentType: z.string(),
+        sizeBytes: z.number(),
+      })
+    )
+    .optional()
+    .default([]),
 });
 
 function makePublicId(): string {
@@ -89,12 +94,34 @@ export async function POST(req: Request) {
     pricingJson,
     clientName: data.clientName,
     clientEmail: data.clientEmail,
+    // updatedAt default is ok; you’ll update on PATCH later
   });
 
-  // email notify (best-effort)
+  // Event: request created
+  await logCommissionEvent({
+    requestId: id,
+    type: "request_created",
+    actor: "client",
+    summary: `Request submitted by ${data.clientName}`,
+    data: {
+      publicId,
+      clientEmail: data.clientEmail,
+      medium: data.medium,
+      sizeTier: data.sizeTier,
+      detailLevel: data.detailLevel,
+      backgroundLevel: data.backgroundLevel,
+      rush: data.rush,
+      requestedArtistId: data.requestedArtistId ?? null,
+      isCommunitySupported: data.isCommunitySupported,
+    },
+  });
+
+  // email notify (best-effort) + event logging
   try {
     const adminUrl = `${process.env.APP_URL}/admin/requests/${id}`;
-    const summary = `${data.medium}, ${data.sizeTier}, ${data.detailLevel}, bg:${data.backgroundLevel}${data.rush ? ", rush" : ""}`;
+    const summary = `${data.medium}, ${data.sizeTier}, ${data.detailLevel}, bg:${data.backgroundLevel}${
+      data.rush ? ", rush" : ""
+    }`;
 
     const tpl = newCommissionEmail({
       publicId,
@@ -104,14 +131,31 @@ export async function POST(req: Request) {
       adminUrl,
     });
 
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: [process.env.ADMIN_NOTIFY_EMAIL!],
       subject: tpl.subject,
       html: tpl.html,
     });
-  } catch {
-    // ignore email errors for now
+
+    await logCommissionEvent({
+      requestId: id,
+      type: "email_sent",
+      actor: "system",
+      summary: "Admin notification email sent",
+      data: { provider: "resend", result },
+    });
+  } catch (err: any) {
+    await logCommissionEvent({
+      requestId: id,
+      type: "email_failed",
+      actor: "system",
+      summary: "Admin notification email failed",
+      data: {
+        message: err?.message ?? String(err),
+      },
+    });
+    // ignore email errors for now (your current behavior)
   }
 
   return NextResponse.json({ ok: true, id, publicId, estimate });
