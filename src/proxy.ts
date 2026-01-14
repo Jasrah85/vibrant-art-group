@@ -1,6 +1,15 @@
 // src/proxy.ts
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+type AuthenticatedRequest = NextRequest & {
+  auth?: {
+    user?: {
+      email?: string | null;
+    };
+  };
+};
 
 function allowedEmails() {
   return (process.env.ADMIN_EMAILS ?? "")
@@ -14,18 +23,22 @@ function isAllowedAdmin(email: string | null | undefined) {
   return allowedEmails().includes(email.toLowerCase());
 }
 
-export default auth((req) => {
-  const url = req.nextUrl;
+export default auth((req: NextRequest) => {
+  const request = req as AuthenticatedRequest;
+
+  const url = request.nextUrl;
   const pathname = url.pathname;
 
   const isAdminRoute =
     pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
 
-  if (!isAdminRoute) return NextResponse.next();
+  if (!isAdminRoute) {
+    return NextResponse.next();
+  }
 
-  const email = req.auth?.user?.email ?? null;
+  const email = request.auth?.user?.email ?? null;
 
-  if (!req.auth || !isAllowedAdmin(email)) {
+  if (!request.auth || !isAllowedAdmin(email)) {
     const redirectUrl = url.clone();
     redirectUrl.pathname = "/auth/signin";
     redirectUrl.searchParams.set("callbackUrl", url.toString());
