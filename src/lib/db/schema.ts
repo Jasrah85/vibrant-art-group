@@ -1,3 +1,4 @@
+// src/lib/db/schema.ts
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
@@ -110,4 +111,46 @@ export const commissionEvents = sqliteTable("commission_events", {
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
+});
+
+// ======================================================
+// Auth.js (NextAuth v5) tables for Drizzle Adapter
+// Required for email magic-link sign-in (Resend)
+// ======================================================
+
+export const authUsers = sqliteTable("auth_users", {
+  id: text("id").primaryKey(),
+  name: text("name"),
+  email: text("email").unique(),
+  emailVerified: integer("email_verified", { mode: "timestamp_ms" }),
+  image: text("image"),
+});
+
+export const authAccounts = sqliteTable("auth_accounts", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+
+  type: text("type").notNull(),
+  provider: text("provider").notNull(),
+  providerAccountId: text("provider_account_id").notNull(),
+
+  refresh_token: text("refresh_token"),
+  access_token: text("access_token"),
+  expires_at: integer("expires_at"),
+  token_type: text("token_type"),
+  scope: text("scope"),
+  id_token: text("id_token"),
+  session_state: text("session_state"),
+});
+
+export const authSessions = sqliteTable("auth_sessions", {
+  sessionToken: text("session_token").primaryKey(),
+  userId: text("user_id").notNull(),
+  expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
+});
+
+export const authVerificationTokens = sqliteTable("auth_verification_tokens", {
+  identifier: text("identifier").notNull(),
+  token: text("token").notNull(),
+  expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
 });
